@@ -25,7 +25,7 @@ class AIAgent extends Model
 
     public function doctors(): BelongsToMany
     {
-        return $this->belongsToMany(Doctor::class, 'doctor_agent_assignments')
+        return $this->belongsToMany(Doctor::class, 'doctor_agent_assignments', 'ai_agent_id', 'doctor_id')
             ->withPivot(['assigned_by', 'status', 'configuration'])
             ->withTimestamps();
     }

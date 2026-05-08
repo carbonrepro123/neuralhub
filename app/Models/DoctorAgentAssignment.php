@@ -31,6 +31,6 @@ class DoctorAgentAssignment extends Model
 
     public function aiAgent(): BelongsTo
     {
-        return $this->belongsTo(AIAgent::class);
+        return $this->belongsTo(AIAgent::class, 'ai_agent_id');
     }
 }
