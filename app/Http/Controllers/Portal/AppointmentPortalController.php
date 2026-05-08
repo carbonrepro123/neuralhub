@@ -131,11 +131,19 @@ class AppointmentPortalController extends Controller
         $outputs = Schema::hasTable('ai_outputs')
             ? AIOutput::where('patient_id', $patient->id)->latest()->take(8)->get()
             : collect();
+        $reportInsights = $patient->documents
+            ->flatMap(fn ($document) => $document->reportExtractions)
+            ->sortByDesc('created_at')
+            ->take(4)
+            ->values();
+        $assignedAgents = $appointment->doctor?->aiAgents()->orderBy('name')->get() ?? collect();
 
         return view('portal.appointments.consult', [
             'appointment' => $appointment->load(['doctor.user', 'videoRoom']),
             'patient' => $patient,
             'outputs' => $outputs,
+            'reportInsights' => $reportInsights,
+            'assignedAgents' => $assignedAgents,
             'latestSoap' => SoapNote::where('appointment_id', $appointment->id)->latest()->first(),
         ]);
     }

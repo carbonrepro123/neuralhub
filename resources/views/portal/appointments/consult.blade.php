@@ -20,10 +20,16 @@
     <div class="split">
         <div class="card">
             <h2>Video Consultation</h2>
-            <div class="meta-item" style="margin-top:14px;">
-                <strong>{{ strtoupper($appointment->videoRoom?->provider ?? 'video') }} Room</strong>
-                <div class="muted" style="margin-top:8px;">{{ $appointment->videoRoom?->room_url ?: 'Generate the room first.' }}</div>
-            </div>
+            @if($appointment->videoRoom?->room_url && $appointment->videoRoom?->provider === 'jitsi')
+                <div class="video-frame" style="margin-top:16px;">
+                    <iframe src="{{ $appointment->videoRoom->room_url }}" allow="camera; microphone; fullscreen; display-capture" referrerpolicy="origin"></iframe>
+                </div>
+            @else
+                <div class="meta-item" style="margin-top:14px;">
+                    <strong>{{ strtoupper($appointment->videoRoom?->provider ?? 'video') }} Room</strong>
+                    <div class="muted" style="margin-top:8px;">{{ $appointment->videoRoom?->room_url ?: 'Generate the room first.' }}</div>
+                </div>
+            @endif
             <div class="meta-item" style="margin-top:14px;">
                 <strong>Internal Visit Notes</strong>
                 <div class="muted" style="margin-top:8px;">{{ $appointment->notes ?: 'No note yet.' }}</div>
@@ -43,9 +49,23 @@
             <h2>Patient Overview</h2>
             <div class="meta-list" style="margin-top:14px;">
                 <div class="meta-item"><strong>Name:</strong> <span class="muted">{{ $patient->name }}</span></div>
+                <div class="meta-item"><strong>Age / DOB:</strong> <span class="muted">{{ $patient->date_of_birth ? $patient->date_of_birth->age . ' years · ' . $patient->date_of_birth->format('M d, Y') : 'Not recorded' }}</span></div>
                 <div class="meta-item"><strong>Allergies:</strong> <span class="muted">{{ implode(', ', $patient->allergies ?? []) ?: 'None listed' }}</span></div>
                 <div class="meta-item"><strong>Medications:</strong> <span class="muted">{{ implode(', ', $patient->medications ?? []) ?: 'None listed' }}</span></div>
                 <div class="meta-item"><strong>Conditions:</strong> <span class="muted">{{ implode(', ', $patient->conditions ?? []) ?: 'None listed' }}</span></div>
+                <div class="meta-item"><strong>Insurance:</strong> <span class="muted">{{ $patient->insurance_provider ?: 'Not recorded' }}</span></div>
+            </div>
+
+            <h2 style="margin-top:22px;">Assigned AI Employees</h2>
+            <div class="meta-list" style="margin-top:14px;">
+                @forelse($assignedAgents as $agent)
+                    <div class="meta-item">
+                        <strong>{{ $agent->name }}</strong>
+                        <div class="muted" style="margin-top:6px;">{{ ucfirst(str_replace('_', ' ', $agent->agent_type)) }} is enabled to assist this doctor during the visit.</div>
+                    </div>
+                @empty
+                    <div class="meta-item">No AI employees assigned yet.</div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -88,6 +108,26 @@
     </div>
 
     <div class="grid-2" style="margin-top:22px;">
+        <div class="card">
+            <h2>Report Reader Brief</h2>
+            <div class="meta-list" style="margin-top:14px;">
+                @forelse($reportInsights as $insight)
+                    <div class="meta-item">
+                        <strong>{{ $insight->document?->original_name ?: 'Uploaded report' }}</strong>
+                        <div class="muted" style="margin-top:8px;">{{ $insight->summary ?: 'No AI summary stored yet.' }}</div>
+                        @if(!empty($insight->vitals_json))
+                            <div class="muted" style="margin-top:8px;">Vitals: {{ collect($insight->vitals_json)->map(fn ($row) => ($row['name'] ?? 'Value') . ': ' . ($row['value'] ?? ''))->implode(' · ') }}</div>
+                        @endif
+                        @if(!empty($insight->abnormal_findings_json))
+                            <div class="muted" style="margin-top:8px;">Abnormal: {{ collect($insight->abnormal_findings_json)->implode(', ') }}</div>
+                        @endif
+                    </div>
+                @empty
+                    <div class="meta-item">No report summaries available yet. Upload reports before the visit or during intake.</div>
+                @endforelse
+            </div>
+        </div>
+
         <div class="card">
             <h2>Suggested Questions</h2>
             <div class="meta-list" style="margin-top:14px;">

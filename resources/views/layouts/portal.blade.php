@@ -33,6 +33,7 @@
             <a href="{{ route('portal.compliance.index') }}" class="nav-link {{ request()->routeIs('portal.compliance.*') ? 'active' : '' }}">Compliance Bot</a>
             <a href="{{ route('portal.ai.index') }}" class="nav-link {{ request()->routeIs('portal.ai.*') ? 'active' : '' }}">AI Agents</a>
             @if(in_array(auth()->user()->role, ['super_admin', 'clinic_admin']))
+                <a href="{{ route('portal.organizations.index') }}" class="nav-link {{ request()->routeIs('portal.organizations.*') ? 'active' : '' }}">Clinics & Teams</a>
                 <a href="{{ route('portal.operations.index') }}" class="nav-link {{ request()->routeIs('portal.operations.*') ? 'active' : '' }}">Clinic Operations</a>
             @endif
 

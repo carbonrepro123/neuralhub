@@ -19,6 +19,37 @@
         <div class="stat-card"><div class="stat-label">Compliance expiring</div><div class="stat-value">{{ $stats['compliance_expiring'] }}</div></div>
     </div>
 
+    <div class="grid-3" style="margin-top:22px;">
+        <div class="hero-card">
+            <div class="pill success">Video Ready</div>
+            <h2 style="margin:14px 0 10px;">Launch a patient consult</h2>
+            <div class="muted">Create a video appointment, generate a Jitsi room instantly for demos, and open the consultation workspace with the AI side panel.</div>
+            <div class="toolbar" style="margin-top:18px;">
+                <a href="{{ route('portal.appointments.create') }}" class="button green">Create Video Appointment</a>
+            </div>
+        </div>
+        <div class="hero-card">
+            <div class="pill">Clinic AI Employees</div>
+            <h2 style="margin:14px 0 10px;">Assign AI staff to doctors</h2>
+            <div class="muted">Receptionist, intake, report reader, scribe, follow-up, and compliance agents can be enabled per doctor and clinic workflow.</div>
+            <div class="toolbar" style="margin-top:18px;">
+                @if(in_array($user->role, ['super_admin', 'clinic_admin']))
+                    <a href="{{ route('portal.operations.index') }}" class="button secondary">Manage AI Employees</a>
+                @else
+                    <a href="{{ route('portal.ai.index') }}" class="button secondary">Review AI Activity</a>
+                @endif
+            </div>
+        </div>
+        <div class="hero-card">
+            <div class="pill warn">Compliance Bot</div>
+            <h2 style="margin:14px 0 10px;">Track doctor renewals</h2>
+            <div class="muted">Each doctor has separate compliance tracking for licenses, credentials, and renewals across the clinic organization.</div>
+            <div class="toolbar" style="margin-top:18px;">
+                <a href="{{ route('portal.compliance.index') }}" class="button secondary">Open Compliance Bot</a>
+            </div>
+        </div>
+    </div>
+
     <div class="split" style="margin-top:22px;">
         <div class="card">
             <h2>Recent patients</h2>
