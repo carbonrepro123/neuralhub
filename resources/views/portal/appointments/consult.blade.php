@@ -4,15 +4,12 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Live Consultation Assistant</h1>
-            <div class="page-subtitle">AI assistance only. Doctor review required.</div>
+            <div class="page-subtitle">Neural Hub meeting console. AI assistance only. Doctor review required.</div>
         </div>
         <div class="toolbar">
-            @if($appointment->videoRoom?->room_url)
-                <a class="button green" href="{{ $appointment->videoRoom->room_url }}" target="_blank">Join {{ strtoupper($appointment->videoRoom->provider ?? 'video') }} Room</a>
-            @endif
             <form method="POST" action="{{ route('portal.appointments.complete', $appointment) }}">
                 @csrf
-                <button class="button secondary" type="submit">Mark Completed</button>
+                <button class="button secondary" type="submit">End Meeting</button>
             </form>
         </div>
     </div>
@@ -20,16 +17,12 @@
     <div class="split">
         <div class="card">
             <h2>Video Consultation</h2>
-            @if($appointment->videoRoom?->room_url && $appointment->videoRoom?->provider === 'jitsi')
-                <div class="video-frame" style="margin-top:16px;">
-                    <iframe src="{{ $appointment->videoRoom->room_url }}" allow="camera; microphone; fullscreen; display-capture" referrerpolicy="origin"></iframe>
-                </div>
-            @else
-                <div class="meta-item" style="margin-top:14px;">
-                    <strong>{{ strtoupper($appointment->videoRoom?->provider ?? 'video') }} Room</strong>
-                    <div class="muted" style="margin-top:8px;">{{ $appointment->videoRoom?->room_url ?: 'Generate the room first.' }}</div>
-                </div>
-            @endif
+            @include('portal.appointments._jitsi_embed', [
+                'appointment' => $appointment,
+                'participantName' => $appointment->doctor?->user?->name ?: 'Doctor',
+                'meetingContainerId' => 'doctor-jitsi-container',
+                'participantListId' => 'doctor-jitsi-participants',
+            ])
             <div class="meta-item" style="margin-top:14px;">
                 <strong>Internal Visit Notes</strong>
                 <div class="muted" style="margin-top:8px;">{{ $appointment->notes ?: 'No note yet.' }}</div>
@@ -67,6 +60,9 @@
                     <div class="meta-item">No AI employees assigned yet.</div>
                 @endforelse
             </div>
+
+            <h2 style="margin-top:22px;">Live Participants</h2>
+            <div id="doctor-jitsi-participants" class="meta-list" style="margin-top:14px;"></div>
         </div>
     </div>
 

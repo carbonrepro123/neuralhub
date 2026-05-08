@@ -17,12 +17,12 @@
                 @if($appointment->status !== 'in_progress')
                     <form method="POST" action="{{ route('portal.appointments.start', $appointment) }}">
                         @csrf
-                        <button type="submit" class="button green">Start Meeting</button>
+                        <button type="submit" class="button green">Start Meeting as Doctor Host</button>
                     </form>
                 @else
                     <a href="{{ route('portal.appointments.consult', $appointment) }}" class="button green">Doctor Console</a>
                 @endif
-                <a href="{{ route('portal.appointments.join', $appointment) }}" class="button secondary">Patient Waiting Room</a>
+                <a href="{{ $patientJoinUrl }}" class="button secondary" target="_blank">Public Patient Join Link</a>
             @endif
         </div>
     </div>
@@ -44,7 +44,7 @@
                 <div class="meta-list" style="margin-top:14px;">
                     <div class="meta-item"><strong>Provider:</strong> <span class="muted">{{ strtoupper($appointment->videoRoom->provider) }}</span></div>
                     <div class="meta-item"><strong>Doctor Join Link:</strong> <span class="muted">{{ $appointment->videoRoom->doctor_join_url }}</span></div>
-                    <div class="meta-item"><strong>Patient Join Link:</strong> <span class="muted">{{ route('portal.appointments.join', $appointment) }}</span></div>
+                    <div class="meta-item"><strong>Patient Join Link:</strong> <span class="muted">{{ $patientJoinUrl }}</span></div>
                     <div class="meta-item"><strong>Expiry:</strong> <span class="muted">{{ optional($appointment->videoRoom->expires_at)->format('M d, Y H:i') }}</span></div>
                 </div>
             @else

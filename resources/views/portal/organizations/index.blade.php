@@ -3,7 +3,7 @@
 @section('content')
     <div class="page-header">
         <div>
-            <h1 class="page-title">ClinixAI Organizations</h1>
+            <h1 class="page-title">Neural Hub Organizations</h1>
             <div class="page-subtitle">Super admin creates clinics, then each clinic manages doctors, staff, and patients inside its own workspace.</div>
         </div>
     </div>

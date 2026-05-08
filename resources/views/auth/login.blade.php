@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="pill">ClinixAI Login</div>
+    <div class="pill">Neural Hub Login</div>
     <h1 class="page-title" style="font-size: 32px; margin-top: 18px;">Sign in to the secure portal</h1>
     <p class="page-subtitle">Doctor, clinic admin, staff, and patient access starts here.</p>
 

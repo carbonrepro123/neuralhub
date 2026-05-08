@@ -1,4 +1,4 @@
-@extends('layouts.portal', ['title' => 'ClinixAI Dashboard'])
+@extends('layouts.portal', ['title' => 'Neural Hub Dashboard'])
 
 @section('content')
     <div class="page-header">

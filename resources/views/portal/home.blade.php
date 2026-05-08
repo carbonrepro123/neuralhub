@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ClinixAI Portal</title>
+    <title>Neural Hub Portal</title>
     <link rel="stylesheet" href="{{ asset('clinixai.css') }}">
 </head>
 <body>
 <div class="auth-shell">
     <div class="auth-card" style="width:min(980px,100%);">
-        <div class="pill">ClinixAI Clinic OS</div>
+        <div class="pill">Neural Hub Clinic OS</div>
         <h1 class="page-title" style="margin-top:16px;">AI-powered operations platform for clinics, doctors, and care teams</h1>
         <p class="page-subtitle">
             Super admins onboard clinics. Clinic admins add doctors, nurses, assistants, and patients. AI employees help book appointments, prepare visits, review reports, and support compliance from one secure matte healthcare portal.

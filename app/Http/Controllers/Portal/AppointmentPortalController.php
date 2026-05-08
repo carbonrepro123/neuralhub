@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
 class AppointmentPortalController extends Controller
@@ -94,6 +95,7 @@ class AppointmentPortalController extends Controller
         return view('portal.appointments.show', [
             'appointment' => $appointment->load(['doctor.user', 'patient.documents.reportExtractions', 'videoRoom', 'soapNotes']),
             'meetingActivity' => $this->meetingActivity($appointment),
+            'patientJoinUrl' => $this->patientJoinUrl($appointment),
         ]);
     }
 
@@ -154,6 +156,16 @@ class AppointmentPortalController extends Controller
         $this->recordAudit($request, 'joined_video_call', 'appointments', $appointment->id, ['role' => 'patient']);
 
         return view('portal.appointments.patient-join', [
+            'appointment' => $appointment->load(['doctor.user', 'patient', 'videoRoom']),
+            'meetingActivity' => $this->meetingActivity($appointment),
+        ]);
+    }
+
+    public function publicJoin(Request $request, Appointment $appointment): View
+    {
+        abort_unless($request->hasValidSignature(), 403);
+
+        return view('portal.appointments.patient-public-join', [
             'appointment' => $appointment->load(['doctor.user', 'patient', 'videoRoom']),
             'meetingActivity' => $this->meetingActivity($appointment),
         ]);
@@ -257,5 +269,14 @@ class AppointmentPortalController extends Controller
             ->latest('created_at')
             ->take(10)
             ->get();
+    }
+
+    private function patientJoinUrl(Appointment $appointment): string
+    {
+        return URL::temporarySignedRoute(
+            'portal.meetings.join',
+            now()->addDays(2),
+            ['appointment' => $appointment->id]
+        );
     }
 }

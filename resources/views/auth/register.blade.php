@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="pill">ClinixAI Registration</div>
+    <div class="pill">Neural Hub Registration</div>
     <h1 class="page-title" style="font-size: 32px; margin-top: 18px;">Create portal access</h1>
     <p class="page-subtitle">Use this for patient, doctor, or clinic admin onboarding in the MVP.</p>
 

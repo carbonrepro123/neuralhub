@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'ClinixAI Portal' }}</title>
+    <title>{{ $title ?? 'Neural Hub Portal' }}</title>
     <link rel="stylesheet" href="{{ asset('clinixai.css') }}">
 </head>
 <body>
 <div class="shell">
     <div class="topbar">
         <div>
-            <div class="brand-title">ClinixAI</div>
+            <div class="brand-title">Neural Hub</div>
             <div class="brand-subtitle">Secure operations portal for clinics, doctors, staff, and patients</div>
         </div>
         @auth
