@@ -34,7 +34,7 @@
             <h2>Video Room</h2>
             @if($appointment->videoRoom)
                 <div class="meta-list" style="margin-top:14px;">
-                    <div class="meta-item"><strong>Provider:</strong> <span class="muted">{{ $appointment->videoRoom->provider }}</span></div>
+                    <div class="meta-item"><strong>Provider:</strong> <span class="muted">{{ strtoupper($appointment->videoRoom->provider) }}</span></div>
                     <div class="meta-item"><strong>Room URL:</strong> <span class="muted">{{ $appointment->videoRoom->room_url }}</span></div>
                     <div class="meta-item"><strong>Expiry:</strong> <span class="muted">{{ optional($appointment->videoRoom->expires_at)->format('M d, Y H:i') }}</span></div>
                 </div>

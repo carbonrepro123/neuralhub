@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Portal\AIPortalController;
 use App\Http\Controllers\Portal\AppointmentPortalController;
+use App\Http\Controllers\Portal\ClinicOperationsController;
 use App\Http\Controllers\Portal\CompliancePortalController;
 use App\Http\Controllers\Portal\DashboardController;
 use App\Http\Controllers\Portal\HomeController;
@@ -17,6 +18,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/clinic-admin/portal', DashboardController::class)->middleware('role:clinic_admin')->name('portal.clinic-admin');
     Route::get('/super-admin/portal', DashboardController::class)->middleware('role:super_admin')->name('portal.super-admin');
     Route::get('/patient/portal', DashboardController::class)->middleware('role:patient')->name('portal.patient');
+    Route::get('/operations', [ClinicOperationsController::class, 'index'])->middleware('role:super_admin,clinic_admin')->name('portal.operations.index');
+    Route::post('/operations/doctors/{doctor}/agents', [ClinicOperationsController::class, 'assignAgent'])->middleware('role:super_admin,clinic_admin')->name('portal.operations.agents.assign');
+    Route::post('/operations/clinics/{clinic}/features', [ClinicOperationsController::class, 'toggleFeature'])->middleware('role:super_admin,clinic_admin')->name('portal.operations.features.toggle');
 
     Route::get('/patients', [PatientPortalController::class, 'index'])->name('portal.patients.index');
     Route::get('/patients/create', [PatientPortalController::class, 'create'])->name('portal.patients.create');

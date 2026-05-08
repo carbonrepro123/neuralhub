@@ -7,6 +7,10 @@ return [
         'domain' => env('DAILY_DOMAIN'),
     ],
 
+    'jitsi' => [
+        'base_url' => env('JITSI_BASE_URL', 'https://meet.jit.si'),
+    ],
+
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),

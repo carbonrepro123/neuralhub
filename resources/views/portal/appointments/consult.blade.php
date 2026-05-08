@@ -8,7 +8,7 @@
         </div>
         <div class="toolbar">
             @if($appointment->videoRoom?->room_url)
-                <a class="button green" href="{{ $appointment->videoRoom->room_url }}" target="_blank">Join Daily Room</a>
+                <a class="button green" href="{{ $appointment->videoRoom->room_url }}" target="_blank">Join {{ strtoupper($appointment->videoRoom->provider ?? 'video') }} Room</a>
             @endif
             <form method="POST" action="{{ route('portal.appointments.complete', $appointment) }}">
                 @csrf
@@ -21,7 +21,7 @@
         <div class="card">
             <h2>Video Consultation</h2>
             <div class="meta-item" style="margin-top:14px;">
-                <strong>Daily.co Room</strong>
+                <strong>{{ strtoupper($appointment->videoRoom?->provider ?? 'video') }} Room</strong>
                 <div class="muted" style="margin-top:8px;">{{ $appointment->videoRoom?->room_url ?: 'Generate the room first.' }}</div>
             </div>
             <div class="meta-item" style="margin-top:14px;">

@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Appointment;
+use App\Models\AIAgent;
 use App\Models\Clinic;
+use App\Models\ClinicFeatureFlag;
 use App\Models\ComplianceItem;
 use App\Models\Doctor;
 use App\Models\Patient;
@@ -116,5 +118,35 @@ class SampleDataSeeder extends Seeder
             $doctorUser->id => ['role' => 'doctor', 'status' => 'active'],
             $patientUser->id => ['role' => 'patient', 'status' => 'active'],
         ]);
+
+        foreach ([
+            'video_consultations' => 'Live Video Consultation',
+            'ai_assistant' => 'AI Assistant During Call',
+            'compliance_bot' => 'Compliance Bot',
+            'report_reader' => 'AI Report Reader',
+            'clinic_ai_employees' => 'Clinic AI Employees',
+        ] as $featureKey => $featureName) {
+            ClinicFeatureFlag::updateOrCreate(
+                ['clinic_id' => $clinic->id, 'feature_key' => $featureKey],
+                ['feature_name' => $featureName, 'enabled' => true]
+            );
+        }
+
+        $assignedAgents = AIAgent::query()
+            ->whereIn('agent_type', ['receptionist_agent', 'intake_agent', 'report_reader', 'scribe_agent', 'compliance_agent'])
+            ->get();
+
+        foreach ($assignedAgents as $agent) {
+            $doctor->aiAgents()->syncWithoutDetaching([
+                $agent->id => [
+                    'assigned_by' => $doctorUser->id,
+                    'status' => 'active',
+                    'configuration' => json_encode([
+                        'acts_as_staff' => true,
+                        'doctor_review_required' => true,
+                    ]),
+                ],
+            ]);
+        }
     }
 }

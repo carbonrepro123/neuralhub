@@ -46,4 +46,9 @@ class Clinic extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function featureFlags(): HasMany
+    {
+        return $this->hasMany(ClinicFeatureFlag::class);
+    }
 }

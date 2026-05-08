@@ -11,7 +11,7 @@ use App\Models\Patient;
 use App\Models\SoapNote;
 use App\Models\VideoRoom;
 use App\Services\AI\AIOrchestratorService;
-use App\Services\Video\DailyVideoProvider;
+use App\Services\Video\VideoProviderManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -77,39 +77,31 @@ class AppointmentPortalController extends Controller
         ]);
     }
 
-    public function generateRoom(Request $request, Appointment $appointment, DailyVideoProvider $provider): RedirectResponse
+    public function generateRoom(Request $request, Appointment $appointment, VideoProviderManager $providers): RedirectResponse
     {
         $expiresAt = now()->addHours(4);
         $roomName = 'appointment-' . $appointment->id . '-' . Str::lower(Str::random(5));
-
-        if (! config('services.daily.key')) {
-            $room = [
-                'name' => $roomName,
-                'url' => 'https://example.daily.co/' . $roomName,
-            ];
-            $doctorToken = ['token' => 'doctor-demo-token'];
-            $patientToken = ['token' => 'patient-demo-token'];
-        } else {
-            $room = $provider->createRoom([
-                'name' => $roomName,
-                'expires_at' => $expiresAt,
-            ]);
-            $doctorToken = $provider->createToken($room['name'], [
-                'user_name' => 'Doctor',
-                'is_owner' => true,
-                'enable_screenshare' => true,
-                'expires_at' => $expiresAt,
-            ]);
-            $patientToken = $provider->createToken($room['name'], [
-                'user_name' => 'Patient',
-                'expires_at' => $expiresAt,
-            ]);
-        }
+        $provider = $providers->current();
+        $providerName = $providers->providerName();
+        $room = $provider->createRoom([
+            'name' => $roomName,
+            'expires_at' => $expiresAt,
+        ]);
+        $doctorToken = $provider->createToken($room['name'], [
+            'user_name' => 'Doctor',
+            'is_owner' => true,
+            'enable_screenshare' => true,
+            'expires_at' => $expiresAt,
+        ]);
+        $patientToken = $provider->createToken($room['name'], [
+            'user_name' => 'Patient',
+            'expires_at' => $expiresAt,
+        ]);
 
         VideoRoom::updateOrCreate(
             ['appointment_id' => $appointment->id],
             [
-                'provider' => 'daily',
+                'provider' => $providerName,
                 'external_room_id' => $room['name'],
                 'room_url' => $room['url'],
                 'doctor_token' => $doctorToken['token'] ?? null,
@@ -126,7 +118,7 @@ class AppointmentPortalController extends Controller
 
         $this->recordAudit($request, 'created_video_room', 'appointments', $appointment->id);
 
-        return redirect()->route('portal.appointments.consult', $appointment)->with('status', 'Video room is ready.');
+        return redirect()->route('portal.appointments.consult', $appointment)->with('status', strtoupper($providerName) . ' room is ready.');
     }
 
     public function consult(Request $request, Appointment $appointment): View

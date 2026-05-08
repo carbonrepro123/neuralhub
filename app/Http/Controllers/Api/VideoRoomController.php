@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\Concerns\RecordsAuditLogs;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\VideoRoom;
-use App\Services\Video\DailyVideoProvider;
+use App\Services\Video\VideoProviderManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class VideoRoomController extends Controller
 {
     use RecordsAuditLogs;
 
-    public function store(Request $request, DailyVideoProvider $provider): JsonResponse
+    public function store(Request $request, VideoProviderManager $providers): JsonResponse
     {
         $data = $request->validate([
             'appointment_id' => ['required', 'integer'],
@@ -22,6 +22,9 @@ class VideoRoomController extends Controller
 
         $appointment = Appointment::findOrFail($data['appointment_id']);
         $expiresAt = now()->addHours(4);
+
+        $provider = $providers->current();
+        $providerName = $providers->providerName();
 
         $room = $provider->createRoom([
             'name' => 'appointment-' . $appointment->id,
@@ -45,7 +48,7 @@ class VideoRoomController extends Controller
         $videoRoom = VideoRoom::updateOrCreate(
             ['appointment_id' => $appointment->id],
             [
-                'provider' => 'daily',
+                'provider' => $providerName,
                 'external_room_id' => $room['name'],
                 'room_url' => $room['url'],
                 'doctor_token' => $doctorToken['token'] ?? null,
@@ -60,9 +63,10 @@ class VideoRoomController extends Controller
         return response()->json($videoRoom, 201);
     }
 
-    public function token(Request $request, VideoRoom $videoRoom, DailyVideoProvider $provider): JsonResponse
+    public function token(Request $request, VideoRoom $videoRoom, VideoProviderManager $providers): JsonResponse
     {
         $role = $request->string('role')->toString() ?: 'patient';
+        $provider = $providers->current();
 
         $token = $provider->createToken($videoRoom->external_room_id, [
             'user_name' => ucfirst($role),

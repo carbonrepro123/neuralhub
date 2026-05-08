@@ -8,6 +8,7 @@ use App\Models\AIOutput;
 use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\ComplianceItem;
+use App\Models\Doctor;
 use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -56,6 +57,12 @@ class DashboardController extends Controller
         return view('portal.dashboard', [
             'user' => $user,
             'stats' => $stats,
+            'assignedAgents' => $doctorId
+                ? Doctor::with('aiAgents')->find($doctorId)?->aiAgents ?? collect()
+                : collect(),
+            'clinicFeatures' => $clinicIds->isNotEmpty()
+                ? Clinic::with('featureFlags')->whereIn('id', $clinicIds)->get()
+                : collect(),
             'recentPatients' => Patient::query()
                 ->when($doctorId, fn ($query) => $query->where('primary_doctor_id', $doctorId))
                 ->when($clinicIds->isNotEmpty(), fn ($query) => $query->whereIn('clinic_id', $clinicIds))

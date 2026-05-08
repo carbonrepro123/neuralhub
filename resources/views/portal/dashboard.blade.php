@@ -50,6 +50,38 @@
     </div>
 
     <div class="grid-2" style="margin-top:22px;">
+        <div class="card">
+            <h2>Assigned AI Employees</h2>
+            <div class="meta-list" style="margin-top:14px;">
+                @forelse($assignedAgents as $agent)
+                    <div class="meta-item">
+                        <strong>{{ $agent->name }}</strong>
+                        <div class="muted" style="margin-top:6px;">Acts on behalf of the doctor for {{ strtolower(str_replace('_', ' ', $agent->agent_type)) }} workflows.</div>
+                    </div>
+                @empty
+                    <div class="meta-item">No AI employees assigned yet. Clinic admin can assign them from Clinic Operations.</div>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Clinic Feature Access</h2>
+            <div class="meta-list" style="margin-top:14px;">
+                @forelse($clinicFeatures as $clinic)
+                    @foreach($clinic->featureFlags as $feature)
+                        <div class="meta-item">
+                            <strong>{{ $feature->feature_name }}</strong>
+                            <div class="muted" style="margin-top:6px;">{{ $clinic->name }} · {{ $feature->enabled ? 'Enabled' : 'Disabled' }}</div>
+                        </div>
+                    @endforeach
+                @empty
+                    <div class="meta-item">No clinic feature flags configured yet.</div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:22px;">
         <div class="table-card">
             <h2 style="margin-top:0;">Upcoming appointments</h2>
             <table>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Doctor extends Model
@@ -39,5 +40,17 @@ class Doctor extends Model
     public function complianceItems(): HasMany
     {
         return $this->hasMany(ComplianceItem::class);
+    }
+
+    public function agentAssignments(): HasMany
+    {
+        return $this->hasMany(DoctorAgentAssignment::class);
+    }
+
+    public function aiAgents(): BelongsToMany
+    {
+        return $this->belongsToMany(AIAgent::class, 'doctor_agent_assignments')
+            ->withPivot(['assigned_by', 'status', 'configuration'])
+            ->withTimestamps();
     }
 }

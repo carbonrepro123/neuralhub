@@ -32,6 +32,9 @@
             <a href="{{ route('portal.appointments.index') }}" class="nav-link {{ request()->routeIs('portal.appointments.*') ? 'active' : '' }}">Appointments</a>
             <a href="{{ route('portal.compliance.index') }}" class="nav-link {{ request()->routeIs('portal.compliance.*') ? 'active' : '' }}">Compliance Bot</a>
             <a href="{{ route('portal.ai.index') }}" class="nav-link {{ request()->routeIs('portal.ai.*') ? 'active' : '' }}">AI Agents</a>
+            @if(in_array(auth()->user()->role, ['super_admin', 'clinic_admin']))
+                <a href="{{ route('portal.operations.index') }}" class="nav-link {{ request()->routeIs('portal.operations.*') ? 'active' : '' }}">Clinic Operations</a>
+            @endif
 
             <div class="sidebar-section">Quick Links</div>
             <a href="{{ route('portal.appointments.create') }}" class="nav-link">Create Appointment</a>
