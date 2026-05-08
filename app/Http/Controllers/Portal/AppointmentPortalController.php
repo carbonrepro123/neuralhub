@@ -25,14 +25,26 @@ class AppointmentPortalController extends Controller
     public function index(Request $request): View
     {
         $query = Appointment::with(['doctor.user', 'patient', 'videoRoom'])->orderByDesc('appointment_date');
-        $doctorId = optional($request->user()->doctor)->id;
+        $user = $request->user()->load(['doctor', 'patient', 'clinics']);
+        $doctorId = optional($user->doctor)->id;
+        $patientId = optional($user->patient)->id;
+        $clinicIds = $user->clinics->pluck('id');
 
         if ($doctorId) {
             $query->where('doctor_id', $doctorId);
         }
 
+        if ($patientId) {
+            $query->where('patient_id', $patientId);
+        }
+
+        if (! $doctorId && ! $patientId && $clinicIds->isNotEmpty()) {
+            $query->whereIn('clinic_id', $clinicIds);
+        }
+
         return view('portal.appointments.index', [
             'appointments' => $query->paginate(12),
+            'userRole' => $user->role,
         ]);
     }
 
@@ -44,7 +56,7 @@ class AppointmentPortalController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, VideoProviderManager $providers): RedirectResponse
     {
         $data = $request->validate([
             'clinic_id' => ['required', 'integer'],
@@ -63,9 +75,15 @@ class AppointmentPortalController extends Controller
             'status' => 'scheduled',
         ]);
 
+        if ($appointment->appointment_type === 'video') {
+            $this->ensureVideoRoom($appointment, $providers);
+        }
+
         $this->recordAudit($request, 'created_appointment', 'appointments', $appointment->id);
 
-        return redirect()->route('portal.appointments.show', $appointment)->with('status', 'Appointment created successfully.');
+        return redirect()->route('portal.appointments.show', $appointment)->with('status', $appointment->appointment_type === 'video'
+            ? 'Video appointment created and join link generated for doctor and patient.'
+            : 'Appointment created successfully.');
     }
 
     public function show(Request $request, Appointment $appointment): View
@@ -79,46 +97,11 @@ class AppointmentPortalController extends Controller
 
     public function generateRoom(Request $request, Appointment $appointment, VideoProviderManager $providers): RedirectResponse
     {
-        $expiresAt = now()->addHours(4);
-        $roomName = 'appointment-' . $appointment->id . '-' . Str::lower(Str::random(5));
-        $provider = $providers->current();
-        $providerName = $providers->providerName();
-        $room = $provider->createRoom([
-            'name' => $roomName,
-            'expires_at' => $expiresAt,
-        ]);
-        $doctorToken = $provider->createToken($room['name'], [
-            'user_name' => 'Doctor',
-            'is_owner' => true,
-            'enable_screenshare' => true,
-            'expires_at' => $expiresAt,
-        ]);
-        $patientToken = $provider->createToken($room['name'], [
-            'user_name' => 'Patient',
-            'expires_at' => $expiresAt,
-        ]);
-
-        VideoRoom::updateOrCreate(
-            ['appointment_id' => $appointment->id],
-            [
-                'provider' => $providerName,
-                'external_room_id' => $room['name'],
-                'room_url' => $room['url'],
-                'doctor_token' => $doctorToken['token'] ?? null,
-                'patient_token' => $patientToken['token'] ?? null,
-                'expires_at' => $expiresAt,
-                'metadata' => $room,
-            ]
-        );
-
-        $appointment->update([
-            'status' => 'waiting',
-            'daily_room_url' => $room['url'],
-        ]);
+        $videoRoom = $this->ensureVideoRoom($appointment, $providers);
 
         $this->recordAudit($request, 'created_video_room', 'appointments', $appointment->id);
 
-        return redirect()->route('portal.appointments.consult', $appointment)->with('status', strtoupper($providerName) . ' room is ready.');
+        return redirect()->route('portal.appointments.consult', $appointment)->with('status', strtoupper($videoRoom->provider) . ' room is ready.');
     }
 
     public function consult(Request $request, Appointment $appointment): View
@@ -186,5 +169,51 @@ class AppointmentPortalController extends Controller
         $this->recordAudit($request, 'ended_video_call', 'appointments', $appointment->id);
 
         return redirect()->route('portal.appointments.show', $appointment)->with('status', 'Appointment marked completed.');
+    }
+
+    private function ensureVideoRoom(Appointment $appointment, VideoProviderManager $providers): VideoRoom
+    {
+        if ($appointment->videoRoom && $appointment->videoRoom->room_url) {
+            return $appointment->videoRoom;
+        }
+
+        $expiresAt = now()->addHours(4);
+        $roomName = 'appointment-' . $appointment->id . '-' . Str::lower(Str::random(5));
+        $provider = $providers->current();
+        $providerName = $providers->providerName();
+        $room = $provider->createRoom([
+            'name' => $roomName,
+            'expires_at' => $expiresAt,
+        ]);
+        $doctorToken = $provider->createToken($room['name'], [
+            'user_name' => 'Doctor',
+            'is_owner' => true,
+            'enable_screenshare' => true,
+            'expires_at' => $expiresAt,
+        ]);
+        $patientToken = $provider->createToken($room['name'], [
+            'user_name' => 'Patient',
+            'expires_at' => $expiresAt,
+        ]);
+
+        $videoRoom = VideoRoom::updateOrCreate(
+            ['appointment_id' => $appointment->id],
+            [
+                'provider' => $providerName,
+                'external_room_id' => $room['name'],
+                'room_url' => $room['url'],
+                'doctor_token' => $doctorToken['token'] ?? null,
+                'patient_token' => $patientToken['token'] ?? null,
+                'expires_at' => $expiresAt,
+                'metadata' => $room,
+            ]
+        );
+
+        $appointment->update([
+            'status' => 'scheduled',
+            'daily_room_url' => $room['url'],
+        ]);
+
+        return $videoRoom;
     }
 }

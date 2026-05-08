@@ -121,17 +121,33 @@
                     <th>Patient</th>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
                 @forelse($recentAppointments as $appointment)
                     <tr>
-                        <td><a href="{{ route('portal.appointments.show', $appointment) }}">{{ $appointment->patient?->name }}</a></td>
+                        <td>
+                            <a href="{{ route('portal.appointments.show', $appointment) }}">
+                                {{ $user->role === 'patient' ? ($appointment->doctor?->user?->name ?: 'Assigned Doctor') : ($appointment->patient?->name ?: 'Patient') }}
+                            </a>
+                        </td>
                         <td>{{ optional($appointment->appointment_date)->format('M d, Y') }} {{ $appointment->start_time }}</td>
                         <td><span class="pill {{ in_array($appointment->status, ['waiting','scheduled']) ? 'warn' : 'success' }}">{{ $appointment->status }}</span></td>
+                        <td>
+                            @if($appointment->appointment_type === 'video' && $appointment->videoRoom?->room_url)
+                                @if(in_array($user->role, ['doctor', 'clinic_admin', 'super_admin', 'staff']))
+                                    <a class="button secondary" href="{{ route('portal.appointments.consult', $appointment) }}">Open Call</a>
+                                @else
+                                    <a class="button secondary" href="{{ $appointment->videoRoom->patient_join_url }}" target="_blank">Join Call</a>
+                                @endif
+                            @else
+                                <a href="{{ route('portal.appointments.show', $appointment) }}">View</a>
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="3">No appointments yet.</td></tr>
+                    <tr><td colspan="4">No appointments yet.</td></tr>
                 @endforelse
                 </tbody>
             </table>

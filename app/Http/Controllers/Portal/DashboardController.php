@@ -71,6 +71,8 @@ class DashboardController extends Controller
                 ->get(),
             'recentAppointments' => Appointment::with(['patient', 'doctor.user'])
                 ->when($doctorId, fn ($query) => $query->where('doctor_id', $doctorId))
+                ->when($patientId, fn ($query) => $query->where('patient_id', $patientId))
+                ->when(! $doctorId && ! $patientId && $clinicIds->isNotEmpty(), fn ($query) => $query->whereIn('clinic_id', $clinicIds))
                 ->latest('appointment_date')
                 ->take(5)
                 ->get(),

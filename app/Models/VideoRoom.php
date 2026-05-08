@@ -30,4 +30,14 @@ class VideoRoom extends Model
     {
         return $this->belongsTo(Appointment::class);
     }
+
+    public function getDoctorJoinUrlAttribute(): ?string
+    {
+        return $this->room_url;
+    }
+
+    public function getPatientJoinUrlAttribute(): ?string
+    {
+        return $this->room_url;
+    }
 }

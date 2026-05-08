@@ -7,14 +7,15 @@
             <div class="page-subtitle">{{ $appointment->patient?->name }} with {{ $appointment->doctor?->user?->name }} · {{ optional($appointment->appointment_date)->format('M d, Y') }}</div>
         </div>
         <div class="toolbar">
-            @if(!$appointment->videoRoom && $appointment->appointment_type === 'video')
+            @if($appointment->appointment_type === 'video' && !$appointment->videoRoom)
                 <form method="POST" action="{{ route('portal.appointments.room', $appointment) }}">
                     @csrf
-                    <button type="submit">Create Video Room</button>
+                    <button type="submit">Generate Meeting Link</button>
                 </form>
             @endif
             @if($appointment->videoRoom)
-                <a href="{{ route('portal.appointments.consult', $appointment) }}" class="button green">Open Consult View</a>
+                <a href="{{ route('portal.appointments.consult', $appointment) }}" class="button green">Doctor Console</a>
+                <a href="{{ $appointment->videoRoom->patient_join_url }}" class="button secondary" target="_blank">Patient Join Link</a>
             @endif
         </div>
     </div>
@@ -35,7 +36,8 @@
             @if($appointment->videoRoom)
                 <div class="meta-list" style="margin-top:14px;">
                     <div class="meta-item"><strong>Provider:</strong> <span class="muted">{{ strtoupper($appointment->videoRoom->provider) }}</span></div>
-                    <div class="meta-item"><strong>Room URL:</strong> <span class="muted">{{ $appointment->videoRoom->room_url }}</span></div>
+                    <div class="meta-item"><strong>Doctor Join Link:</strong> <span class="muted">{{ $appointment->videoRoom->doctor_join_url }}</span></div>
+                    <div class="meta-item"><strong>Patient Join Link:</strong> <span class="muted">{{ $appointment->videoRoom->patient_join_url }}</span></div>
                     <div class="meta-item"><strong>Expiry:</strong> <span class="muted">{{ optional($appointment->videoRoom->expires_at)->format('M d, Y H:i') }}</span></div>
                 </div>
             @else
