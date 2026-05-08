@@ -1,0 +1,17 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+Route::redirect('/', '/dashboard');
+
+Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('/dashboard', fn () => Inertia::render('Dashboard/Index'))->name('dashboard');
+    Route::get('/doctor/portal', fn () => Inertia::render('Doctor/Portal'))->name('doctor.portal');
+    Route::get('/clinic-admin/portal', fn () => Inertia::render('ClinicAdmin/Portal'))->name('clinic-admin.portal');
+    Route::get('/patient/portal', fn () => Inertia::render('Patient/Portal'))->name('patient.portal');
+    Route::get('/super-admin/portal', fn () => Inertia::render('SuperAdmin/Portal'))->name('super-admin.portal');
+    Route::get('/patients', fn () => Inertia::render('Patients/Index'))->name('patients.index');
+    Route::get('/patients/{id}', fn (string $id) => Inertia::render('Patients/Show', ['patientId' => $id]))->name('patients.show');
+    Route::get('/appointments/{id}/consult', fn (string $id) => Inertia::render('Appointments/Consult', ['appointmentId' => $id]))->name('appointments.consult');
+});

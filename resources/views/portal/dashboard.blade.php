@@ -1,0 +1,101 @@
+@extends('layouts.portal', ['title' => 'ClinixAI Dashboard'])
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">{{ ucfirst(str_replace('_', ' ', $user->role)) }} Dashboard</h1>
+            <div class="page-subtitle">Practical operations overview for video care, AI review, patient management, and compliance.</div>
+        </div>
+        <div class="toolbar">
+            <a href="{{ route('portal.appointments.create') }}" class="button">New Appointment</a>
+            <a href="{{ route('portal.patients.create') }}" class="button secondary">New Patient</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Today's video calls</div><div class="stat-value">{{ $stats['today_video_calls'] }}</div></div>
+        <div class="stat-card"><div class="stat-label">Patients waiting</div><div class="stat-value">{{ $stats['patients_waiting'] }}</div></div>
+        <div class="stat-card"><div class="stat-label">AI reviews pending</div><div class="stat-value">{{ $stats['ai_reviews_pending'] }}</div></div>
+        <div class="stat-card"><div class="stat-label">Compliance expiring</div><div class="stat-value">{{ $stats['compliance_expiring'] }}</div></div>
+    </div>
+
+    <div class="split" style="margin-top:22px;">
+        <div class="card">
+            <h2>Recent patients</h2>
+            <div class="meta-list" style="margin-top:14px;">
+                @forelse($recentPatients as $patient)
+                    <a class="meta-item" href="{{ route('portal.patients.show', $patient) }}">
+                        <strong>{{ $patient->name }}</strong>
+                        <div class="muted" style="margin-top:6px;">{{ $patient->email ?: 'No email' }} · {{ $patient->phone ?: 'No phone' }}</div>
+                    </a>
+                @empty
+                    <div class="meta-item">No recent patients yet.</div>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Recent AI agent activity</h2>
+            <div class="meta-list" style="margin-top:14px;">
+                @forelse($recentAiTasks as $task)
+                    <a class="meta-item" href="{{ route('portal.ai.show', $task) }}">
+                        <strong>{{ ucwords(str_replace('_', ' ', $task->agent_type)) }}</strong>
+                        <div class="muted" style="margin-top:6px;">Status: {{ $task->status }} · {{ $task->created_at?->diffForHumans() }}</div>
+                    </a>
+                @empty
+                    <div class="meta-item">No AI activity yet.</div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:22px;">
+        <div class="table-card">
+            <h2 style="margin-top:0;">Upcoming appointments</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                @forelse($recentAppointments as $appointment)
+                    <tr>
+                        <td><a href="{{ route('portal.appointments.show', $appointment) }}">{{ $appointment->patient?->name }}</a></td>
+                        <td>{{ optional($appointment->appointment_date)->format('M d, Y') }} {{ $appointment->start_time }}</td>
+                        <td><span class="pill {{ in_array($appointment->status, ['waiting','scheduled']) ? 'warn' : 'success' }}">{{ $appointment->status }}</span></td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3">No appointments yet.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card">
+            <h2 style="margin-top:0;">Expiring compliance items</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Expiry</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                @forelse($expiringCompliance as $item)
+                    <tr>
+                        <td><a href="{{ route('portal.compliance.show', $item) }}">{{ $item->certification_type }}</a></td>
+                        <td>{{ optional($item->expiry_date)->format('M d, Y') ?: 'N/A' }}</td>
+                        <td><span class="pill danger">{{ $item->status }}</span></td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3">No expiring items right now.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
