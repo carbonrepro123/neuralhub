@@ -19,16 +19,17 @@
                 <div class="muted" style="margin-top:10px;">Please keep this page open. Once the doctor starts the meeting, refresh and the video room will appear here.</div>
             </div>
         @else
-            <div class="split" style="margin-top:24px;">
-                <div class="card">
-                    <h2>Live Meeting</h2>
-                    @include('portal.appointments._jitsi_embed', [
-                        'appointment' => $appointment,
-                        'participantName' => $appointment->patient?->name ?: 'Patient',
-                        'meetingContainerId' => 'public-jitsi-container',
-                        'participantListId' => 'public-jitsi-participants',
-                    ])
-                </div>
+            <div class="card" style="margin-top:24px;">
+                <h2>Live Meeting</h2>
+                @include('portal.appointments._jitsi_embed', [
+                    'appointment' => $appointment,
+                    'participantName' => $appointment->patient?->name ?: 'Patient',
+                    'meetingContainerId' => 'public-jitsi-container',
+                    'participantListId' => 'public-jitsi-participants',
+                    'meetingHeight' => 860,
+                ])
+            </div>
+            <div class="grid-2" style="margin-top:22px;">
                 <div class="card">
                     <h2>Visit Information</h2>
                     <div class="meta-list" style="margin-top:14px;">
@@ -36,8 +37,9 @@
                         <div class="meta-item"><strong>Date</strong><div class="muted" style="margin-top:6px;">{{ optional($appointment->appointment_date)->format('M d, Y') }} {{ $appointment->start_time }}</div></div>
                         <div class="meta-item"><strong>Status</strong><div class="muted" style="margin-top:6px;">{{ $appointment->status }}</div></div>
                     </div>
-
-                    <h2 style="margin-top:22px;">Live Participants</h2>
+                </div>
+                <div class="card">
+                    <h2>Live Participants</h2>
                     <div id="public-jitsi-participants" class="meta-list" style="margin-top:14px;"></div>
                 </div>
             </div>

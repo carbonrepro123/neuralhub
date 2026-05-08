@@ -5,11 +5,12 @@
     $meetingContainerId = $meetingContainerId ?? 'jitsi-container';
     $participantListId = $participantListId ?? 'jitsi-participants';
     $meetingDomain = parse_url((string) $roomUrl, PHP_URL_HOST) ?: 'meet.jit.si';
+    $meetingHeight = $meetingHeight ?? 820;
 @endphp
 
 @if($roomName)
     <div class="video-frame" style="margin-top:16px;">
-        <div id="{{ $meetingContainerId }}" style="width:100%;min-height:540px;"></div>
+        <div id="{{ $meetingContainerId }}" style="width:100%;min-height:{{ (int) $meetingHeight }}px;"></div>
     </div>
     <script src="https://meet.jit.si/external_api.js"></script>
     <script>
@@ -41,8 +42,14 @@
                 },
                 configOverwrite: {
                     prejoinPageEnabled: false,
+                    prejoinConfig: {
+                        enabled: false,
+                    },
                     startWithAudioMuted: false,
                     startWithVideoMuted: false,
+                    enableWelcomePage: false,
+                    requireDisplayName: false,
+                    disableDeepLinking: true,
                 },
                 interfaceConfigOverwrite: {
                     MOBILE_APP_PROMO: false,

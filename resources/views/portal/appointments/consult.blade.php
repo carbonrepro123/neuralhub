@@ -14,30 +14,22 @@
         </div>
     </div>
 
-    <div class="split">
-        <div class="card">
-            <h2>Video Consultation</h2>
-            @include('portal.appointments._jitsi_embed', [
-                'appointment' => $appointment,
-                'participantName' => $appointment->doctor?->user?->name ?: 'Doctor',
-                'meetingContainerId' => 'doctor-jitsi-container',
-                'participantListId' => 'doctor-jitsi-participants',
-            ])
-            <div class="meta-item" style="margin-top:14px;">
-                <strong>Internal Visit Notes</strong>
-                <div class="muted" style="margin-top:8px;">{{ $appointment->notes ?: 'No note yet.' }}</div>
-            </div>
-            <form method="POST" action="{{ route('portal.appointments.soap', $appointment) }}" style="margin-top:18px;">
-                @csrf
-                <div class="field">
-                    <label>Consultation Notes for AI Scribe</label>
-                    <textarea name="notes">{{ $appointment->notes }}</textarea>
-                </div>
-                <div class="toolbar" style="margin-top:18px;">
-                    <button type="submit">Generate SOAP Draft</button>
-                </div>
-            </form>
+    <div class="card">
+        <h2>Video Consultation</h2>
+        @include('portal.appointments._jitsi_embed', [
+            'appointment' => $appointment,
+            'participantName' => $appointment->doctor?->user?->name ?: 'Doctor',
+            'meetingContainerId' => 'doctor-jitsi-container',
+            'participantListId' => 'doctor-jitsi-participants',
+            'meetingHeight' => 860,
+        ])
+        <div class="meta-item" style="margin-top:14px;">
+            <strong>Important note</strong>
+            <div class="muted" style="margin-top:8px;">Public Jitsi is being used for demo mode. True doctor-as-moderator control requires self-hosted Jitsi or a production provider like Daily.</div>
         </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:22px;">
         <div class="card">
             <h2>Patient Overview</h2>
             <div class="meta-list" style="margin-top:14px;">
@@ -63,6 +55,23 @@
 
             <h2 style="margin-top:22px;">Live Participants</h2>
             <div id="doctor-jitsi-participants" class="meta-list" style="margin-top:14px;"></div>
+        </div>
+        <div class="card">
+            <h2>Consultation Notes</h2>
+            <div class="meta-item" style="margin-top:14px;">
+                <strong>Internal Visit Notes</strong>
+                <div class="muted" style="margin-top:8px;">{{ $appointment->notes ?: 'No note yet.' }}</div>
+            </div>
+            <form method="POST" action="{{ route('portal.appointments.soap', $appointment) }}" style="margin-top:18px;">
+                @csrf
+                <div class="field">
+                    <label>Consultation Notes for AI Scribe</label>
+                    <textarea name="notes">{{ $appointment->notes }}</textarea>
+                </div>
+                <div class="toolbar" style="margin-top:18px;">
+                    <button type="submit">Generate SOAP Draft</button>
+                </div>
+            </form>
         </div>
     </div>
 
