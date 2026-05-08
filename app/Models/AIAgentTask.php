@@ -10,6 +10,8 @@ class AIAgentTask extends Model
 {
     use HasFactory;
 
+    protected $table = 'ai_agent_tasks';
+
     protected $fillable = [
         'clinic_id',
         'patient_id',

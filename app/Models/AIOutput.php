@@ -10,6 +10,8 @@ class AIOutput extends Model
 {
     use HasFactory;
 
+    protected $table = 'ai_outputs';
+
     protected $fillable = [
         'task_id',
         'patient_id',
