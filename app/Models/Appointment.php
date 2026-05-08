@@ -24,10 +24,14 @@ class Appointment extends Model
         'status',
         'daily_room_url',
         'notes',
+        'started_at',
+        'ended_at',
     ];
 
     protected $casts = [
         'appointment_date' => 'date',
+        'started_at' => 'datetime',
+        'ended_at' => 'datetime',
     ];
 
     public function clinic(): BelongsTo

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Concerns\RecordsAuditLogs;
 use App\Http\Controllers\Controller;
 use App\Models\AIOutput;
 use App\Models\Appointment;
+use App\Models\AuditLog;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\SoapNote;
@@ -92,6 +93,7 @@ class AppointmentPortalController extends Controller
 
         return view('portal.appointments.show', [
             'appointment' => $appointment->load(['doctor.user', 'patient.documents.reportExtractions', 'videoRoom', 'soapNotes']),
+            'meetingActivity' => $this->meetingActivity($appointment),
         ]);
     }
 
@@ -106,9 +108,7 @@ class AppointmentPortalController extends Controller
 
     public function consult(Request $request, Appointment $appointment): View
     {
-        $this->recordAudit($request, 'joined_video_call', 'appointments', $appointment->id);
-
-        $appointment->update(['status' => 'in_progress']);
+        $this->recordAudit($request, 'joined_video_call', 'appointments', $appointment->id, ['role' => 'doctor']);
 
         $patient = $appointment->patient->load(['documents.reportExtractions']);
         $outputs = Schema::hasTable('ai_outputs')
@@ -128,6 +128,34 @@ class AppointmentPortalController extends Controller
             'reportInsights' => $reportInsights,
             'assignedAgents' => $assignedAgents,
             'latestSoap' => SoapNote::where('appointment_id', $appointment->id)->latest()->first(),
+            'meetingActivity' => $this->meetingActivity($appointment),
+        ]);
+    }
+
+    public function startMeeting(Request $request, Appointment $appointment, VideoProviderManager $providers): RedirectResponse
+    {
+        if ($appointment->appointment_type === 'video') {
+            $this->ensureVideoRoom($appointment, $providers);
+        }
+
+        $appointment->update([
+            'status' => 'in_progress',
+            'started_at' => $appointment->started_at ?: now(),
+        ]);
+
+        $this->recordAudit($request, 'started_video_call', 'appointments', $appointment->id, ['role' => 'doctor']);
+
+        return redirect()->route('portal.appointments.consult', $appointment)
+            ->with('status', 'Meeting started. Doctor console is now live.');
+    }
+
+    public function patientJoin(Request $request, Appointment $appointment): View
+    {
+        $this->recordAudit($request, 'joined_video_call', 'appointments', $appointment->id, ['role' => 'patient']);
+
+        return view('portal.appointments.patient-join', [
+            'appointment' => $appointment->load(['doctor.user', 'patient', 'videoRoom']),
+            'meetingActivity' => $this->meetingActivity($appointment),
         ]);
     }
 
@@ -165,8 +193,11 @@ class AppointmentPortalController extends Controller
 
     public function complete(Request $request, Appointment $appointment): RedirectResponse
     {
-        $appointment->update(['status' => 'completed']);
-        $this->recordAudit($request, 'ended_video_call', 'appointments', $appointment->id);
+        $appointment->update([
+            'status' => 'completed',
+            'ended_at' => now(),
+        ]);
+        $this->recordAudit($request, 'ended_video_call', 'appointments', $appointment->id, ['role' => 'doctor']);
 
         return redirect()->route('portal.appointments.show', $appointment)->with('status', 'Appointment marked completed.');
     }
@@ -215,5 +246,16 @@ class AppointmentPortalController extends Controller
         ]);
 
         return $videoRoom;
+    }
+
+    private function meetingActivity(Appointment $appointment)
+    {
+        return AuditLog::query()
+            ->where('entity_type', 'appointments')
+            ->where('entity_id', $appointment->id)
+            ->whereIn('action', ['started_video_call', 'joined_video_call', 'ended_video_call'])
+            ->latest('created_at')
+            ->take(10)
+            ->get();
     }
 }

@@ -14,8 +14,15 @@
                 </form>
             @endif
             @if($appointment->videoRoom)
-                <a href="{{ route('portal.appointments.consult', $appointment) }}" class="button green">Doctor Console</a>
-                <a href="{{ $appointment->videoRoom->patient_join_url }}" class="button secondary" target="_blank">Patient Join Link</a>
+                @if($appointment->status !== 'in_progress')
+                    <form method="POST" action="{{ route('portal.appointments.start', $appointment) }}">
+                        @csrf
+                        <button type="submit" class="button green">Start Meeting</button>
+                    </form>
+                @else
+                    <a href="{{ route('portal.appointments.consult', $appointment) }}" class="button green">Doctor Console</a>
+                @endif
+                <a href="{{ route('portal.appointments.join', $appointment) }}" class="button secondary">Patient Waiting Room</a>
             @endif
         </div>
     </div>
@@ -37,12 +44,26 @@
                 <div class="meta-list" style="margin-top:14px;">
                     <div class="meta-item"><strong>Provider:</strong> <span class="muted">{{ strtoupper($appointment->videoRoom->provider) }}</span></div>
                     <div class="meta-item"><strong>Doctor Join Link:</strong> <span class="muted">{{ $appointment->videoRoom->doctor_join_url }}</span></div>
-                    <div class="meta-item"><strong>Patient Join Link:</strong> <span class="muted">{{ $appointment->videoRoom->patient_join_url }}</span></div>
+                    <div class="meta-item"><strong>Patient Join Link:</strong> <span class="muted">{{ route('portal.appointments.join', $appointment) }}</span></div>
                     <div class="meta-item"><strong>Expiry:</strong> <span class="muted">{{ optional($appointment->videoRoom->expires_at)->format('M d, Y H:i') }}</span></div>
                 </div>
             @else
                 <div class="meta-item" style="margin-top:14px;">No room created yet.</div>
             @endif
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:22px;">
+        <h2>Meeting Activity</h2>
+        <div class="meta-list" style="margin-top:14px;">
+            @forelse($meetingActivity as $entry)
+                <div class="meta-item">
+                    <strong>{{ ucwords(str_replace('_', ' ', $entry->action)) }}</strong>
+                    <div class="muted" style="margin-top:6px;">{{ ucfirst($entry->metadata['role'] ?? 'user') }} · {{ $entry->created_at?->format('M d, Y H:i') }}</div>
+                </div>
+            @empty
+                <div class="meta-item">No one has started or joined this meeting yet.</div>
+            @endforelse
         </div>
     </div>
 

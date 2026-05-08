@@ -33,9 +33,16 @@
                     <td>
                         @if($appointment->appointment_type === 'video' && $appointment->videoRoom?->room_url)
                             @if($userRole === 'patient')
-                                <a class="button secondary" href="{{ $appointment->videoRoom->patient_join_url }}" target="_blank">Join</a>
+                                <a class="button secondary" href="{{ route('portal.appointments.join', $appointment) }}">Join</a>
                             @else
-                                <a class="button secondary" href="{{ route('portal.appointments.consult', $appointment) }}">Join</a>
+                                @if($appointment->status === 'in_progress')
+                                    <a class="button secondary" href="{{ route('portal.appointments.consult', $appointment) }}">Join</a>
+                                @else
+                                    <form method="POST" action="{{ route('portal.appointments.start', $appointment) }}">
+                                        @csrf
+                                        <button type="submit" class="button secondary">Start</button>
+                                    </form>
+                                @endif
                             @endif
                         @else
                             <span class="muted">Not ready</span>

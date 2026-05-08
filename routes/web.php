@@ -41,7 +41,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/appointments', [AppointmentPortalController::class, 'store'])->name('portal.appointments.store');
     Route::get('/appointments/{appointment}', [AppointmentPortalController::class, 'show'])->name('portal.appointments.show');
     Route::post('/appointments/{appointment}/room', [AppointmentPortalController::class, 'generateRoom'])->name('portal.appointments.room');
+    Route::post('/appointments/{appointment}/start', [AppointmentPortalController::class, 'startMeeting'])->name('portal.appointments.start');
     Route::get('/appointments/{appointment}/consult', [AppointmentPortalController::class, 'consult'])->name('portal.appointments.consult');
+    Route::get('/appointments/{appointment}/join', [AppointmentPortalController::class, 'patientJoin'])->name('portal.appointments.join');
     Route::post('/appointments/{appointment}/soap', [AppointmentPortalController::class, 'generateSoap'])->name('portal.appointments.soap');
     Route::post('/appointments/{appointment}/complete', [AppointmentPortalController::class, 'complete'])->name('portal.appointments.complete');
 

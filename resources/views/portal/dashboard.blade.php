@@ -137,9 +137,16 @@
                         <td>
                             @if($appointment->appointment_type === 'video' && $appointment->videoRoom?->room_url)
                                 @if(in_array($user->role, ['doctor', 'clinic_admin', 'super_admin', 'staff']))
-                                    <a class="button secondary" href="{{ route('portal.appointments.consult', $appointment) }}">Open Call</a>
+                                    @if($appointment->status === 'in_progress')
+                                        <a class="button secondary" href="{{ route('portal.appointments.consult', $appointment) }}">Doctor Console</a>
+                                    @else
+                                        <form method="POST" action="{{ route('portal.appointments.start', $appointment) }}">
+                                            @csrf
+                                            <button type="submit" class="button secondary">Start Meeting</button>
+                                        </form>
+                                    @endif
                                 @else
-                                    <a class="button secondary" href="{{ $appointment->videoRoom->patient_join_url }}" target="_blank">Join Call</a>
+                                    <a class="button secondary" href="{{ route('portal.appointments.join', $appointment) }}">Join Call</a>
                                 @endif
                             @else
                                 <a href="{{ route('portal.appointments.show', $appointment) }}">View</a>
